@@ -4,7 +4,6 @@ package akshat.e_commerce.Service;
 import akshat.e_commerce.Entity.UserModel;
 import akshat.e_commerce.Respository.UserRespository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -18,12 +17,15 @@ public class UserService {
     @Autowired
     private UserRespository UserRespository;
 
-    private static final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     public boolean saveUser(UserModel user) {
         try {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
-            user.setRoles(Arrays.asList("Admin"));
+            if (user.getRoles() == null || user.getRoles().isEmpty()) {
+                user.setRoles(Arrays.asList("USER"));
+            }
             UserRespository.save(user);
             return true;
         } catch (Exception e) {
@@ -41,5 +43,26 @@ public class UserService {
 
     public UserModel findByName(String name) {
         return UserRespository.findByName(name);
+    }
+
+    public UserModel findByEmail(String email) {
+        return UserRespository.findByEmail(email);
+    }
+
+    public boolean updateUser(UserModel user) {
+        try {
+            UserRespository.save(user);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public boolean login(String email, String password) {
+        UserModel user = UserRespository.findByEmail(email);
+        if (user == null || user.getPassword() == null) {
+            return false;
+        }
+        return passwordEncoder.matches(password, user.getPassword());
     }
 }

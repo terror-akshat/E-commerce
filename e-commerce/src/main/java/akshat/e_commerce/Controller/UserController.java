@@ -1,17 +1,17 @@
 package akshat.e_commerce.Controller;
 
-
 import akshat.e_commerce.Entity.UserModel;
-import akshat.e_commerce.Respository.UserRespository;
 import akshat.e_commerce.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
-
 
 @RestController
 @RequestMapping("/user")
@@ -19,19 +19,6 @@ public class UserController {
 
     @Autowired
     private UserService UserService;
-
-    @PostMapping("/create-user")
-    public ResponseEntity<?> createUser(@RequestBody UserModel user) {
-        UserModel temp = UserService.findByName(user.getEmail());
-        if (temp != null) return new ResponseEntity<>("this is email is already register", HttpStatus.ALREADY_REPORTED);
-        if (user.getPassword().length() < 6)
-            return new ResponseEntity<>("password length should be greater then six", HttpStatus.NOT_ACCEPTABLE);
-        boolean flag = UserService.saveUser(user);
-        if (!flag) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-        return new ResponseEntity<>(user, HttpStatus.CREATED);
-    }
 
     @GetMapping
     public ResponseEntity<List<UserModel>> getAll() {
@@ -60,20 +47,36 @@ public class UserController {
         }
     }
 
-    @PatchMapping("/user-details/{name}")
-    public ResponseEntity<?> updateUser(@PathVariable String name, @RequestBody UserModel user) {
+    @PatchMapping
+    public ResponseEntity<?> updateUser(@RequestBody UserModel user) {
         try {
-            UserModel oldUser = UserService.findByName(name);
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            assert authentication != null;
+            String email = authentication.getName();
+            UserModel oldUser = UserService.findByEmail(email);
             if (oldUser == null) {
                 return new ResponseEntity<>(HttpStatus.NOT_FOUND);
             }
             if (user.getName() != null) {
                 oldUser.setName(user.getName());
             }
-            if (user.getPassword() != null) {
-                oldUser.setPassword(user.getPassword());
+            if (user.getEmail() != null) {
+                UserModel existingUser = UserService.findByEmail(user.getEmail());
+                if (existingUser != null && !existingUser.getId().equals(oldUser.getId())) {
+                    return new ResponseEntity<>("this email is already registered", HttpStatus.CONFLICT);
+                }
+                oldUser.setEmail(user.getEmail());
             }
-            UserService.saveUser(oldUser);
+            if (user.getPassword() != null) {
+                if (user.getPassword().length() < 6) {
+                    return new ResponseEntity<>("password length should be greater than six", HttpStatus.BAD_REQUEST);
+                }
+                oldUser.setPassword(new BCryptPasswordEncoder().encode(user.getPassword()));
+            }
+            boolean updated = UserService.updateUser(oldUser);
+            if (!updated) {
+                return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
             return new ResponseEntity<>(oldUser, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);

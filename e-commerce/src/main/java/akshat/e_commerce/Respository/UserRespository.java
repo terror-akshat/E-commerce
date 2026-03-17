@@ -7,5 +7,7 @@ public interface UserRespository extends MongoRepository<UserModel, String> {
 
     UserModel findByName(String name);
 
+    UserModel findByEmail(String email);
+
     void deleteUserByName(String name);
 }

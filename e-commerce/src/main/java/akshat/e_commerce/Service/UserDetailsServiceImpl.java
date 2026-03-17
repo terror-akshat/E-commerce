@@ -16,10 +16,10 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        UserModel user = UserRespository.findByName(username);
+        UserModel user = UserRespository.findByEmail(username);
         if (user != null) {
             return org.springframework.security.core.userdetails.User.builder()
-                    .username(user.getName())
+                    .username(user.getEmail())
                     .password(user.getPassword())
                     .roles(user.getRoles().toArray(new String[0]))
                     .build();

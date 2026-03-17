@@ -1,5 +1,6 @@
 package akshat.e_commerce.Entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.NonNull;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -15,12 +16,12 @@ public class UserModel {
     @Id
     private String id;
 
-    @NonNull
     private String name;
 
     @Indexed(unique = true)
     private String email;
 
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
     private List<String> roles;
