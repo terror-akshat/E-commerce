@@ -3,6 +3,7 @@ package akshat.e_commerce.Controller;
 import akshat.e_commerce.Entity.UserModel;
 import akshat.e_commerce.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -35,11 +36,14 @@ public class PublicController {
             return new ResponseEntity<>("this email is already registered", HttpStatus.CONFLICT);
         }
 
-        boolean flag = UserService.saveUser(user);
-        if (!flag) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        try {
+            UserModel savedUser = UserService.saveUser(user);
+            return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
+        } catch (DuplicateKeyException e) {
+            return new ResponseEntity<>("this email is already registered", HttpStatus.CONFLICT);
+        } catch (Exception e) {
+            return new ResponseEntity<>("failed to save user: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        return new ResponseEntity<>(user, HttpStatus.CREATED);
     }
 
 
@@ -59,7 +63,7 @@ public class PublicController {
             }
             return new ResponseEntity<>("login successful", HttpStatus.OK);
         } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>("login failed: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }

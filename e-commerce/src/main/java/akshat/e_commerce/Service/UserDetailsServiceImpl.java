@@ -1,7 +1,7 @@
 package akshat.e_commerce.Service;
 
 import akshat.e_commerce.Entity.UserModel;
-import akshat.e_commerce.Respository.UserRespository;
+import akshat.e_commerce.Respository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 public class UserDetailsServiceImpl implements UserDetailsService {
 
     @Autowired
-    private UserRespository UserRespository;
+    private UserRepository UserRespository;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {

@@ -20,19 +20,6 @@ public class UserController {
     @Autowired
     private UserService UserService;
 
-    @GetMapping
-    public ResponseEntity<List<UserModel>> getAll() {
-        try {
-            List<UserModel> user = UserService.getAll();
-            if (!user.isEmpty()) {
-                return new ResponseEntity<>(user, HttpStatus.OK);
-            }
-            return new ResponseEntity<List<UserModel>>(HttpStatus.NOT_FOUND);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
     @GetMapping("id/{myId}")
     public ResponseEntity<UserModel> getById(@PathVariable String myId) {
         try {
@@ -41,7 +28,6 @@ public class UserController {
                 return new ResponseEntity<>(HttpStatus.NOT_FOUND);
             }
             return new ResponseEntity<>(user.get(), HttpStatus.OK);
-
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -73,13 +59,10 @@ public class UserController {
                 }
                 oldUser.setPassword(new BCryptPasswordEncoder().encode(user.getPassword()));
             }
-            boolean updated = UserService.updateUser(oldUser);
-            if (!updated) {
-                return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-            return new ResponseEntity<>(oldUser, HttpStatus.OK);
+            UserModel updatedUser = UserService.updateUser(oldUser);
+            return new ResponseEntity<>(updatedUser, HttpStatus.OK);
         } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>("failed to update user: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }
