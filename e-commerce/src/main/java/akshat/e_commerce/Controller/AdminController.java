@@ -15,10 +15,8 @@ import java.util.List;
 @RequestMapping("/admin")
 public class AdminController {
 
-
     @Autowired
     private UserService UserService;
-
 
     @GetMapping
     public ResponseEntity<List<UserModel>> getAll() {

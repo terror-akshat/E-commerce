@@ -1,17 +1,21 @@
 package akshat.e_commerce.Controller;
 
 import akshat.e_commerce.Entity.UserModel;
+import akshat.e_commerce.Service.UserDetailsServiceImpl;
 import akshat.e_commerce.Service.UserService;
+import akshat.e_commerce.utility.JwtUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.*;
 
 
+@Slf4j
 @RestController
 @RequestMapping("/public")
 public class PublicController {
@@ -19,8 +23,17 @@ public class PublicController {
     @Autowired
     private UserService UserService;
 
+    @Autowired
+    private AuthenticationManager authenticationManager;
+
+    @Autowired
+    private UserDetailsServiceImpl userDetailsService;
+
+    @Autowired
+    private JwtUtil jwtUtil;
+
     @PostMapping("/create-user")
-    public ResponseEntity<?> createUser(@RequestBody UserModel user) {
+    public ResponseEntity<?> signup(@RequestBody UserModel user) {
         if (user.getName() == null || user.getName().isBlank()) {
             return new ResponseEntity<>("name is required", HttpStatus.BAD_REQUEST);
         }
@@ -47,6 +60,12 @@ public class PublicController {
     }
 
 
+    @GetMapping("/{user}")
+    public UserModel getUser(@PathVariable String user) {
+        return UserService.findByName(user);
+    }
+
+
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody UserModel user) {
         try {
@@ -56,14 +75,18 @@ public class PublicController {
             if (user.getPassword() == null || user.getPassword().isBlank()) {
                 return new ResponseEntity<>("password is required", HttpStatus.BAD_REQUEST);
             }
-
-            boolean flag = UserService.login(user.getEmail(), user.getPassword());
-            if (!flag) {
-                return new ResponseEntity<>("invalid email or password", HttpStatus.UNAUTHORIZED);
-            }
-            return new ResponseEntity<>("login successful", HttpStatus.OK);
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword()));
+            UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
+            String s = jwtUtil.generateToken(userDetails.getUsername());
+            return new ResponseEntity<>(s, HttpStatus.OK);
+//            boolean flag = UserService.login(user.getEmail(), user.getPassword());
+//            if (!flag) {
+//                return new ResponseEntity<>("invalid email or password", HttpStatus.UNAUTHORIZED);
+//            }
+//            return new ResponseEntity<>("login successful", HttpStatus.OK);
         } catch (Exception e) {
-            return new ResponseEntity<>("login failed: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            log.error("exception occuer while createAuthentication", e);
+            return new ResponseEntity<>("Please put create username and passeword: " + e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 }

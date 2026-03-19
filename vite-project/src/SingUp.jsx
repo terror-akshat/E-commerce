@@ -10,7 +10,7 @@ function SingUp() {
 
   const handleSignup = async () => {
     try {
-      const res = await API.post("/signup", user);
+      const res = await API.post("/public/create-user", user);
       alert("Signup Successful");
       console.log(res.data);
     } catch (err) {
