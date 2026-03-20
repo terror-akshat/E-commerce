@@ -1,26 +1,26 @@
 import React, { useState } from "react";
-import API, { setBasicAuth } from "./axios";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "./context/AuthContext";
 
 function Login() {
+  const { login, error, loading } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [user, setUser] = useState({
     email: "",
     password: "",
   });
 
   const handleLogin = async () => {
-    try {
-      const res = await API.post("/public/login", user);
+    const res = await login(user.email, user.password);
 
-      if (res.data) {
-        setBasicAuth(user.email, user.password);
-        alert("Login Successful");
-        console.log(res.data);
-      } else {
-        alert("Invalid Credentials");
-      }
-    } catch (err) {
-      alert("Login Failed");
+    if (res.success) {
+      const redirectTo = location.state?.from?.pathname || "/UserProfiles";
+      navigate(redirectTo, { replace: true });
+      alert("Login Successful");
+      return;
     }
+    alert(res.message || "Login Failed");
   };
 
   return (
@@ -38,7 +38,17 @@ function Login() {
         onChange={(e) => setUser({ ...user, password: e.target.value })}
       />
 
-      <button onClick={handleLogin}>Login</button>
+      <button onClick={handleLogin} disabled={loading}>
+        {loading ? "Logging in..." : "Login"}
+      </button>
+
+      {error ?
+        <p>{error}</p>
+      : null}
+
+      <p>
+        New here? <Link to="/signup">Create an account</Link>
+      </p>
     </div>
   );
 }

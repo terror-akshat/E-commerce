@@ -48,7 +48,6 @@ public class PublicController {
         if (temp != null) {
             return new ResponseEntity<>("this email is already registered", HttpStatus.CONFLICT);
         }
-
         try {
             UserModel savedUser = UserService.saveUser(user);
             return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
