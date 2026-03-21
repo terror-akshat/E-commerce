@@ -84,8 +84,8 @@ public class PublicController {
 //            }
 //            return new ResponseEntity<>("login successful", HttpStatus.OK);
         } catch (Exception e) {
-            log.error("exception occuer while createAuthentication", e);
-            return new ResponseEntity<>("Please put create username and passeword: " + e.getMessage(), HttpStatus.BAD_REQUEST);
+            log.error("exception ocuer while createAuthentication", e);
+            return new ResponseEntity<>("Please put create username and password: " + e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 }

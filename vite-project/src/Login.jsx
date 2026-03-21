@@ -11,6 +11,18 @@ function Login() {
     password: "",
   });
 
+  const handleGoogleLogin = () => {
+    const clientId = "890684994042-3r6b8vsgag5j8m33dirvcm7l6cagvu6e.apps.googleusercontent.com";
+
+    const redirectUri = "http://localhost:8081/auth/callback";
+
+    const scope = "openid email profile";
+
+    const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}&access_type=offline`;
+
+    window.location.href = url;
+  };
+  
   const handleLogin = async () => {
     const res = await login(user.email, user.password);
 
@@ -49,6 +61,7 @@ function Login() {
       <p>
         New here? <Link to="/signup">Create an account</Link>
       </p>
+      <button onClick={handleGoogleLogin}>Login with Google</button>
     </div>
   );
 }

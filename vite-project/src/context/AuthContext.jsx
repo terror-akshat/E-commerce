@@ -8,7 +8,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [currentUser, setCurrentUser] = useState(() =>
-    Boolean(localStorage.getItem("token"))
+    Boolean(localStorage.getItem("token")),
   );
 
   const login = async (email, password) => {
@@ -40,6 +40,30 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  function loginWithGoogleCode(token){
+    setLoading(true);
+    setError("");
+
+    try {
+      localStorage.setItem("token", token);
+      setToken(token);
+      setCurrentUser(true);
+      return {
+        success: true,
+        token: token,
+      };
+    } catch {
+      const message = err.response?.data || err.message || "Login failed";
+      setError(message);
+      return {
+        success: false,
+        message,
+      };
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const logout = () => {
     localStorage.removeItem("token");
     setToken(null);
@@ -54,6 +78,7 @@ export const AuthProvider = ({ children }) => {
         error,
         token,
         login,
+        loginWithGoogleCode,
         logout,
       }}
     >
